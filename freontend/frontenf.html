@@ -33,7 +33,6 @@
                 </tr>
             </thead>
             <tbody id="clients-table">
-                <!-- Данные загрузятся через JavaScript -->
             </tbody>
         </table>
     </div>
@@ -73,10 +72,9 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'converted' })
             });
-            loadClients(); // Перезагружаем таблицу
+            loadClients();
         }
 
-        // Загрузить при старте страницы
         loadClients();
     </script>
 </body>
