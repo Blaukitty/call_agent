@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель оператора Доктрина</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #4A90E2; color: white; }
+        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .new { background: #e3f2fd; color: #0d47a1; }
+        .converted { background: #e8f5e9; color: #1b5e20; }
+        button { background: #4A90E2; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #357ABD; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Список клиентов для обзвона</h1>
+        <button onclick="loadClients()">Обновить данные</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Телефон</th>
+                    <th>Тариф</th>
+                    <th>Статус</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody id="clients-table">
+                <!-- Данные загрузятся через JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function loadClients() {
+            try {
+                const response = await fetch(`${API_URL}/clients`);
+                const clients = await response.json();
+                const tbody = document.getElementById('clients-table');
+                tbody.innerHTML = '';
+
+                clients.forEach(client => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${client.id}</td>
+                            <td>${client.name}</td>
+                            <td>${client.phone}</td>
+                            <td>${client.trial}</td>
+                            <td><span class="status-badge ${client.status}">${client.status}</span></td>
+                            <td>
+                                ${client.status === 'new' ? `<button onclick="convertClient(${client.id})">Перевести на Премиум</button>` : 'Готово'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                alert('Ошибка при загрузке данных из API');
+            }
+        }
+
+        async function convertClient(id) {
+            await fetch(`${API_URL}/clients/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'converted' })
+            });
+            loadClients(); // Перезагружаем таблицу
+        }
+
+        // Загрузить при старте страницы
+        loadClients();
+    </script>
+</body>
+</html>

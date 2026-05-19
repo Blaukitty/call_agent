@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    build: ./database
+    container_name: call_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d callcenter"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  api:
+      build: ./backend
+      ports: 
+       - "8000:8000"
+      environment:
+       DB_HOST: db
+       DB_NAME: call_db
+       DB_USER: ${POSTGRES_USER}
+       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      depends_on:
+       - db
+  
+  frotend:
+      build: ./frontenf
+      ports:
+        - "8000:80"
+      depends_on:
+       - api
+  
+volumes:
+  db_data:
