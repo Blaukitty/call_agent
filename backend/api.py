@@ -8,7 +8,6 @@ import time
 
 app = FastAPI()
 
-# Разрешаем HTML-странице делать запросы к API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,7 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключение к PostgreSQL с ожиданием (пока база поднимется в Docker)
 def get_db_connection():
     for _ in range(10):
         try:
@@ -32,11 +30,9 @@ def get_db_connection():
             time.sleep(2)
     raise Exception("Не удалось подключиться к базе данных")
 
-# Модель данных для обновления статуса клиента
 class UpdateStatus(BaseModel):
     status: str
-
-# 1. Получить список всех клиентов
+    
 @app.get("/clients")
 def get_clients():
     conn = get_db_connection()
@@ -47,7 +43,6 @@ def get_clients():
     conn.close()
     return clients
 
-# 2. Получить фразы скрипта обзвона
 @app.get("/script/{step_name}")
 def get_script_step(step_name: str):
     conn = get_db_connection()
@@ -60,7 +55,6 @@ def get_script_step(step_name: str):
         raise HTTPException(status_code=404, detail="Шаг скрипта не найден")
     return step
 
-# 3. Изменить статус клиента
 @app.put("/clients/{client_id}/status")
 def update_client_status(client_id: int, data: UpdateStatus):
     conn = get_db_connection()
